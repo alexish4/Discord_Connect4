@@ -8,7 +8,10 @@ load_dotenv()
 # Initialize bot:
 intents = discord.Intents.all()
 intents.message_content = True
-bot = commands.Bot(command_prefix='?', intents=intents)
+bot = commands.Bot(command_prefix='!', intents=intents)
+
+# Color Object for embeddings:
+color = discord.Color.from_rgb(114, 137, 218)
 
 # Game State Variables:
 game_active = False
@@ -24,7 +27,7 @@ def roster(author):
     return
 
 def initialize_board():
-    return [[' ' for _  in range(7)] for _ in range(6)]
+    return [[' ' for _ in range(7)] for _ in range(6)]
 
 def display_board():
     board_str = ''
@@ -60,7 +63,7 @@ async def start_connect4(ctx):
     current_player = '🟡'
     board = initialize_board()
     await ctx.send("New Connect 4 game started! Player 1's turn (🟡).")
-    await ctx.send(display_board())
+    await send_embed(ctx=ctx, title='Connect4', description=display_board())
 
 @bot.command(name='hi')
 async def say_hi(ctx):
@@ -79,7 +82,6 @@ async def move(ctx, column: int):
 
     # Add logic to make move and update board.
     # Make call to make_move
-    # Then need to make call to send_embed with updated game board
 
     if check_win():
         await ctx.send(f"Player {current_player} wins!")
@@ -92,12 +94,12 @@ async def move(ctx, column: int):
     else:
         switch_player()
         await ctx.send(f"Player {current_player}'s turn.")
-        await ctx.send(display_board()) #This needs to be embedded
+        await send_embed(ctx=ctx, title='Connect4', description=display_board())
 
 
 # Function to create embed:
 def create_embed(title, description, url=None, image_url=None):
-    embed = discord.Embed(title=title, description=description)
+    embed = discord.Embed(title=title, description=description, color=color)
     if url:
         embed.set_url(url)
     if image_url:
@@ -130,6 +132,9 @@ async def on_message(message):
         roster(author_id)
     
     # Ensure commands are processed
+    await bot.process_commands(message)
+
+    # Ensure that the bot processes incoming messages:
     await bot.process_commands(message)
 
 # Run the bot:
