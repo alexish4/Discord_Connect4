@@ -19,6 +19,7 @@ msg = None
 current_player = '🟡'
 board = []
 player_list = []
+reactions = {"1️⃣": 0, "2️⃣": 1, "3️⃣": 2, "4️⃣": 3, "5️⃣": 4, "6️⃣": 5, "7️⃣": 6}
 
 # Need to add a method to allow ONLY two players to join:
 def roster(author):
@@ -58,8 +59,9 @@ def make_move(column):
                 board[row_index][column] = '🟡'
             else:
                 board[row_index][column] = '🔴'
-            break
-    pass
+            return True
+    # Overflow detected:
+    return False
 
 def switch_player():
     global current_player
@@ -86,8 +88,11 @@ async def move(ctx, column: int):
         return
 
     # Add logic to make move and update board.
-    # Make call to make_move
-    make_move(column)
+    # Make call to make_move and check if column is full:
+    if not make_move(column):
+        description = f"{display_board()}\nPlayer {current_player} please choose a valid column."
+        await update_embed(msg, title='Connect4', description=description)
+        return
 
     if check_win():
         await ctx.send(f"Player {current_player} wins!")
@@ -116,12 +121,26 @@ async def send_embed(ctx, title, description, url=None, image_url=None):
     # Sends the initial embedded message (game board):
     embed = create_embed(title, description, url, image_url)
     message = await ctx.send(embed=embed)
+    await message.add_reaction("1️⃣")
+    await message.add_reaction("2️⃣")
+    await message.add_reaction("3️⃣")
+    await message.add_reaction("4️⃣")
+    await message.add_reaction("5️⃣")
+    await message.add_reaction("6️⃣")
+    await message.add_reaction("7️⃣")
     return message
 
 async def update_embed(message, title, description, url=None, image_url=None):
     # Updates the game board to prevent message spamming:
     new_embed = discord.Embed(title=title, description=description, color=color)
     await message.edit(embed=new_embed)
+    await message.add_reaction("1️⃣")
+    await message.add_reaction("2️⃣")
+    await message.add_reaction("3️⃣")
+    await message.add_reaction("4️⃣")
+    await message.add_reaction("5️⃣")
+    await message.add_reaction("6️⃣")
+    await message.add_reaction("7️⃣")
 
 @bot.event
 async def on_ready():
