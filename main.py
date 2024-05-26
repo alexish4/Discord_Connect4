@@ -39,16 +39,16 @@ def display_board():
 def check_win():
     # Longest segment of any color is >=4:
     # Only need to check from the most recently placed circle.
-    pass
+    return False
 
 def check_draw():
     # All spaces filled but not instance of 4 long segment:
-    pass
+    return False
 
 
 # Gameplay Logic:
 def make_move(column):
-    #
+    global board
     pass
 
 def switch_player():
