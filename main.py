@@ -53,7 +53,7 @@ def switch_player():
     current_player = '🔴' if current_player == '🟡' else '🟡'
 
 
-@bot.command(name='startconnect4')
+@bot.command(name='start_connect4')
 async def start_connect4(ctx):
     global game_active, current_player, board
     game_active = True
@@ -66,7 +66,7 @@ async def start_connect4(ctx):
 async def move(ctx, column: int):
     global game_active, player_list
     if not game_active:
-        await ctx.send("No active game. Start a new game with ?startconnect4.")
+        await ctx.send("No active game. Start a new game with ?start_connect4.")
         return
     if column < 0 or column > 6:
         await ctx.send("Invalid column. Choose a column between 0 and 6.")
@@ -87,7 +87,7 @@ async def move(ctx, column: int):
     else:
         switch_player()
         await ctx.send(f"Player {current_player}'s turn.")
-        await ctx.send(display_board())
+        await ctx.send(display_board()) #This needs to be embedded
 
 
 # Function to create embed:
