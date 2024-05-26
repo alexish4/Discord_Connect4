@@ -10,6 +10,9 @@ intents = discord.Intents.all()
 intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
+# Color Object for embeddings:
+color = discord.Color.from_rgb(114, 137, 218)
+
 # Game State Variables:
 game_active = False
 current_player = '🟡'
@@ -24,7 +27,7 @@ def roster(author):
     return
 
 def initialize_board():
-    return [[' ' for _  in range(7)] for _ in range(6)]
+    return [[' ' for _ in range(7)] for _ in range(6)]
 
 def display_board():
     board_str = ''
@@ -91,7 +94,7 @@ async def move(ctx, column: int):
 
 # Function to create embed:
 def create_embed(title, description, url=None, image_url=None):
-    embed = discord.Embed(title=title, description=description)
+    embed = discord.Embed(title=title, description=description, color=color)
     if url:
         embed.set_url(url)
     if image_url:
