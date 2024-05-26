@@ -14,7 +14,14 @@ bot = commands.Bot(command_prefix='?', intents=intents)
 game_active = False
 current_player = '🟡'
 board = []
-longest = 0
+player_list = []
+
+# Need to add a method to allow ONLY two players to join:
+def roster(author):
+    global player_list
+    if len(player_list) < 2:
+        player_list.append(author)
+    return
 
 def initialize_board():
     return [[' ' for _  in range(7)] for _ in range(6)]
@@ -57,7 +64,7 @@ async def start_connect4(ctx):
 
 @bot.command(name='move')
 async def move(ctx, column: int):
-    global game_active
+    global game_active, player_list
     if not game_active:
         await ctx.send("No active game. Start a new game with ?startconnect4.")
         return
@@ -66,13 +73,17 @@ async def move(ctx, column: int):
         return
 
     # Add logic to make move and update board.
+    # Make call to make_move
+    # Then need to make call to send_embed with updated game board
 
     if check_win():
         await ctx.send(f"Player {current_player} wins!")
         game_active = False
+        player_list = []
     elif check_draw():
         await ctx.send("It's a draw!")
         game_active = False
+        player_list = []
     else:
         switch_player()
         await ctx.send(f"Player {current_player}'s turn.")
@@ -90,7 +101,7 @@ def create_embed(title, description, url=None, image_url=None):
 
 async def send_embed(ctx, title, description, url=None, image_url=None):
     embed = create_embed(title, description, url, image_url)
-    channel = bot.get_channel(1243655198874796072) #TEMPORARY
+    channel = ctx.channel
     if channel:
         await channel.send(embed=embed)
     else:
@@ -99,6 +110,19 @@ async def send_embed(ctx, title, description, url=None, image_url=None):
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}.')
+
+@bot.event
+async def on_message(message):
+    # Ignore messages from the bot itself:
+    if message.author == bot.user:
+        return
+
+    # Get author's ID:
+    author_id = message.author.id
+
+    # Add author to roster if message is "Dibs":
+    if message.content == "Dibs":
+        roster(author_id)
 
 # Run the bot:
 TOKEN = os.getenv("TOKEN")
