@@ -65,16 +65,11 @@ async def start_connect4(ctx):
     await ctx.send("New Connect 4 game started! Player 1's turn (🟡).")
     await send_embed(ctx=ctx, title='Connect4', description=display_board())
 
-@bot.command(name='hi')
-async def say_hi(ctx):
-    await ctx.send(f"Hi, {ctx.author.display_name}!")
-
-
 @bot.command(name='move')
 async def move(ctx, column: int):
     global game_active, player_list
     if not game_active:
-        await ctx.send("No active game. Start a new game with ?start_connect4.")
+        await ctx.send("No active game. Start a new game with !start_connect4.")
         return
     if column < 0 or column > 6:
         await ctx.send("Invalid column. Choose a column between 0 and 6.")
@@ -130,17 +125,10 @@ async def on_message(message):
     # Add author to roster if message is "Dibs":
     if message.content == "Dibs":
         roster(author_id)
-    
-    # Ensure commands are processed
-    await bot.process_commands(message)
 
     # Ensure that the bot processes incoming messages:
     await bot.process_commands(message)
 
 # Run the bot:
 TOKEN = os.getenv("TOKEN")
-if TOKEN is None:
-    print("Error: No TOKEN found in environment.")
-else:
-    print("TOKEN loaded successfully.")
-    bot.run(TOKEN)
+bot.run(TOKEN)
