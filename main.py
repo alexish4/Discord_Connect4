@@ -8,7 +8,7 @@ load_dotenv()
 # Initialize bot:
 intents = discord.Intents.all()
 intents.message_content = True
-bot = commands.Bot(command_prefix='?', intents=intents)
+bot = commands.Bot(command_prefix='!', intents=intents)
 
 # Game State Variables:
 game_active = False
@@ -60,7 +60,7 @@ async def start_connect4(ctx):
     current_player = '🟡'
     board = initialize_board()
     await ctx.send("New Connect 4 game started! Player 1's turn (🟡).")
-    await ctx.send(display_board())
+    await send_embed(ctx=ctx, title='Connect4', description=display_board())
 
 @bot.command(name='move')
 async def move(ctx, column: int):
@@ -86,7 +86,7 @@ async def move(ctx, column: int):
     else:
         switch_player()
         await ctx.send(f"Player {current_player}'s turn.")
-        await ctx.send(display_board()) #This needs to be embedded
+        await send_embed(ctx=ctx, title='Connect4', description=display_board())
 
 
 # Function to create embed:
@@ -122,6 +122,9 @@ async def on_message(message):
     # Add author to roster if message is "Dibs":
     if message.content == "Dibs":
         roster(author_id)
+
+    # Ensure that the bot processes incoming messages:
+    await bot.process_commands(message)
 
 # Run the bot:
 TOKEN = os.getenv("TOKEN")
