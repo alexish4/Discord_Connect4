@@ -48,7 +48,14 @@ def check_draw():
 
 # Gameplay Logic:
 def make_move(column):
-    #
+    global board
+    for row_index in range(len(board)): #when we find empty space, place
+        if board[row_index][column] == ' ':
+            if current_player == '🟡':
+                board[row_index][column] = '🟡'
+            else:
+                board[row_index][column] = '🔴'
+            break
     pass
 
 def switch_player():
@@ -77,6 +84,7 @@ async def move(ctx, column: int):
 
     # Add logic to make move and update board.
     # Make call to make_move
+    make_move(column)
 
     if check_win():
         await ctx.send(f"Player {current_player} wins!")
