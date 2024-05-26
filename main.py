@@ -64,7 +64,6 @@ async def start_connect4(ctx):
 
 @bot.command(name='hi')
 async def say_hi(ctx):
-    print(f"Command is working")
     await ctx.send(f"Hi, {ctx.author.display_name}!")
 
 
@@ -129,6 +128,9 @@ async def on_message(message):
     # Add author to roster if message is "Dibs":
     if message.content == "Dibs":
         roster(author_id)
+    
+    # Ensure commands are processed
+    await bot.process_commands(message)
 
 # Run the bot:
 TOKEN = os.getenv("TOKEN")
