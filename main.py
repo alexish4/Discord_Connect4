@@ -49,9 +49,10 @@ def check_draw():
 # Gameplay Logic:
 def make_move(column):
     global board
-    for row_index in range(len(board)): #when we find empty space, place
+    for row_index in range(len(board) -1, -1, -1): #when we find empty space, place
         if board[row_index][column] == ' ':
             if current_player == '🟡':
+                print(row_index)
                 board[row_index][column] = '🟡'
             else:
                 board[row_index][column] = '🔴'
