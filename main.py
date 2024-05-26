@@ -27,7 +27,7 @@ def roster(author):
     return
 
 def initialize_board():
-    return [[' ' for _ in range(7)] for _ in range(6)]
+    return [['⚪' for _ in range(7)] for _ in range(6)]
 
 def display_board():
     board_str = ''
@@ -39,20 +39,19 @@ def display_board():
 def check_win():
     # Longest segment of any color is >=4:
     # Only need to check from the most recently placed circle.
-    pass
+    return False
 
 def check_draw():
     # All spaces filled but not instance of 4 long segment:
-    pass
+    return False
 
 
 # Gameplay Logic:
 def make_move(column):
     global board
-    for row_index in range(len(board) -1, -1, -1): #when we find empty space, place
-        if board[row_index][column] == ' ':
+    for row_index in range(len(board)-1, -1, -1):  # when we find empty space, place
+        if board[row_index][column] == '⚪':
             if current_player == '🟡':
-                print(row_index)
                 board[row_index][column] = '🟡'
             else:
                 board[row_index][column] = '🔴'
