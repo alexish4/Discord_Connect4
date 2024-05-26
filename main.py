@@ -74,7 +74,6 @@ async def move(ctx, column: int):
 
     # Add logic to make move and update board.
     # Make call to make_move
-    # Then need to make call to send_embed with updated game board
 
     if check_win():
         await ctx.send(f"Player {current_player} wins!")
