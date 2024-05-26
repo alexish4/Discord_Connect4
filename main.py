@@ -62,6 +62,12 @@ async def start_connect4(ctx):
     await ctx.send("New Connect 4 game started! Player 1's turn (🟡).")
     await ctx.send(display_board())
 
+@bot.command(name='hi')
+async def say_hi(ctx):
+    print(f"Command is working")
+    await ctx.send(f"Hi, {ctx.author.display_name}!")
+
+
 @bot.command(name='move')
 async def move(ctx, column: int):
     global game_active, player_list
@@ -126,4 +132,8 @@ async def on_message(message):
 
 # Run the bot:
 TOKEN = os.getenv("TOKEN")
-bot.run(TOKEN)
+if TOKEN is None:
+    print("Error: No TOKEN found in environment.")
+else:
+    print("TOKEN loaded successfully.")
+    bot.run(TOKEN)
