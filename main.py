@@ -15,6 +15,7 @@ color = discord.Color.from_rgb(114, 137, 218)
 
 # Game State Variables:
 game_active = False
+msg = None
 current_player = '🟡'
 board = []
 player_list = []
@@ -27,7 +28,9 @@ def roster(author):
     return
 
 def initialize_board():
-    return [['⚪' for _ in range(7)] for _ in range(6)]
+    b = [['⚪' for _ in range(7)] for _ in range(6)]
+    #b.append([str(i) for i in range(7)])
+    return b
 
 def display_board():
     board_str = ''
@@ -65,16 +68,16 @@ def switch_player():
 
 @bot.command(name='start_connect4')
 async def start_connect4(ctx):
-    global game_active, current_player, board
+    global game_active, current_player, board, msg
     game_active = True
     current_player = '🟡'
     board = initialize_board()
-    await ctx.send("New Connect 4 game started! Player 1's turn (🟡).")
-    await send_embed(ctx=ctx, title='Connect4', description=display_board())
+    description = f"{display_board()}\nNew Connect 4 game started! Player 1's turn (🟡)."
+    msg = await send_embed(ctx=ctx, title='Connect4', description=description)
 
 @bot.command(name='move')
 async def move(ctx, column: int):
-    global game_active, player_list
+    global game_active, player_list, msg
     if not game_active:
         await ctx.send("No active game. Start a new game with !start_connect4.")
         return
@@ -96,11 +99,11 @@ async def move(ctx, column: int):
         player_list = []
     else:
         switch_player()
-        await ctx.send(f"Player {current_player}'s turn.")
-        await send_embed(ctx=ctx, title='Connect4', description=display_board())
+        description = f"{display_board()}\nPlayer {current_player}'s turn."
+        await update_embed(msg, title='Connect4', description=description)
 
 
-# Function to create embed:
+# Functions to create, send, or edit embed:
 def create_embed(title, description, url=None, image_url=None):
     embed = discord.Embed(title=title, description=description, color=color)
     if url:
@@ -110,12 +113,15 @@ def create_embed(title, description, url=None, image_url=None):
     return embed
 
 async def send_embed(ctx, title, description, url=None, image_url=None):
+    # Sends the initial embedded message (game board):
     embed = create_embed(title, description, url, image_url)
-    channel = ctx.channel
-    if channel:
-        await channel.send(embed=embed)
-    else:
-        await ctx.send("Couldn't find the specified channel.")
+    message = await ctx.send(embed=embed)
+    return message
+
+async def update_embed(message, title, description, url=None, image_url=None):
+    # Updates the game board to prevent message spamming:
+    new_embed = discord.Embed(title=title, description=description, color=color)
+    await message.edit(embed=new_embed)
 
 @bot.event
 async def on_ready():
