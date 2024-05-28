@@ -30,7 +30,7 @@ def roster(author):
 
 def initialize_board():
     b = [['⚪' for _ in range(7)] for _ in range(6)]
-    #b.append([str(i) for i in range(7)])
+    b.append(['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣'])
     return b
 
 def display_board():
@@ -77,7 +77,7 @@ async def start_connect4(ctx):
     description = f"{display_board()}\nNew Connect 4 game started! Player 1's turn (🟡)."
     msg = await send_embed(ctx=ctx, title='Connect4', description=description)
 
-@bot.command(name='move')
+'''@bot.command(name='move')
 async def move(ctx, column: int):
     global game_active, player_list, msg
     if not game_active:
@@ -105,7 +105,42 @@ async def move(ctx, column: int):
     else:
         switch_player()
         description = f"{display_board()}\nPlayer {current_player}'s turn."
-        await update_embed(msg, title='Connect4', description=description)
+        await update_embed(msg, title='Connect4', description=description)'''
+
+@bot.event
+async def on_reaction_add(reaction, user):
+    if reaction.message.author == bot.user and user != bot.user:
+        # Make move based on which emoji was reacted to:
+        global game_active, player_list, msg, reactions
+        column = reactions[str(reaction)]
+        ctx = reaction.message.channel
+        if not game_active:
+            await ctx.send("No active game. Start a new game with !start_connect4.")
+            return
+        if column < 0 or column > 6:
+            description = "Invalid column. Choose a column between 0 and 6."
+            await update_embed(msg, title='Connect4', description=description)
+            return
+
+        # Add logic to make move and update board.
+        # Make call to make_move and check if column is full:
+        if not make_move(column):
+            description = f"{display_board()}\nPlayer {current_player} please choose a valid column."
+            await update_embed(msg, title='Connect4', description=description)
+            return
+
+        if check_win():
+            await ctx.send(f"Player {current_player} wins!")
+            game_active = False
+            player_list = []
+        elif check_draw():
+            await ctx.send("It's a draw!")
+            game_active = False
+            player_list = []
+        else:
+            switch_player()
+            description = f"{display_board()}\nPlayer {current_player}'s turn."
+            await update_embed(msg, title='Connect4', description=description)
 
 
 # Functions to create, send, or edit embed:
