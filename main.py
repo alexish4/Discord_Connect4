@@ -19,6 +19,8 @@ msg = None
 current_player = '🟡'
 board = []
 player_list = []
+recentPos = []
+spaces_left = 42
 reactions = {"1️⃣": 0, "2️⃣": 1, "3️⃣": 2, "4️⃣": 3, "5️⃣": 4, "6️⃣": 5, "7️⃣": 6}
 
 # Need to add a method to allow ONLY two players to join:
@@ -40,25 +42,38 @@ def display_board():
     return board_str
 
 # Check Endgame Logic:
-def check_win():
+def dfs(start):
+    # Helper function/heuristic for check_win() method:
+    #if length >= 4:
+        #return True
+    return False
+
+def check_win(origin):
     # Longest segment of any color is >=4:
     # Only need to check from the most recently placed circle.
+    if dfs(origin):
+        return True
     return False
 
 def check_draw():
-    # All spaces filled but not instance of 4 long segment:
+    # All spaces filled but no instance of 4 long segment:
+    global spaces_left
+    if spaces_left <= 0:
+        return True
     return False
 
 
 # Gameplay Logic:
 def make_move(column):
-    global board
-    for row_index in range(len(board)-1, -1, -1):  # when we find empty space, place
-        if board[row_index][column] == '⚪':
+    global board, recentPos, spaces_left
+    for row in range(len(board)-1, -1, -1):  # when we find empty space, place
+        if board[row][column] == '⚪':
             if current_player == '🟡':
-                board[row_index][column] = '🟡'
+                board[row][column] = '🟡'
             else:
-                board[row_index][column] = '🔴'
+                board[row][column] = '🔴'
+            recentPos = [row, column]
+            spaces_left -= 1
             return True
     # Overflow detected:
     return False
@@ -77,41 +92,12 @@ async def start_connect4(ctx):
     description = f"{display_board()}\nNew Connect 4 game started! Player 1's turn (🟡)."
     msg = await send_embed(ctx=ctx, title='Connect4', description=description)
 
-'''@bot.command(name='move')
-async def move(ctx, column: int):
-    global game_active, player_list, msg
-    if not game_active:
-        await ctx.send("No active game. Start a new game with !start_connect4.")
-        return
-    if column < 0 or column > 6:
-        await ctx.send("Invalid column. Choose a column between 0 and 6.")
-        return
-
-    # Add logic to make move and update board.
-    # Make call to make_move and check if column is full:
-    if not make_move(column):
-        description = f"{display_board()}\nPlayer {current_player} please choose a valid column."
-        await update_embed(msg, title='Connect4', description=description)
-        return
-
-    if check_win():
-        await ctx.send(f"Player {current_player} wins!")
-        game_active = False
-        player_list = []
-    elif check_draw():
-        await ctx.send("It's a draw!")
-        game_active = False
-        player_list = []
-    else:
-        switch_player()
-        description = f"{display_board()}\nPlayer {current_player}'s turn."
-        await update_embed(msg, title='Connect4', description=description)'''
-
 @bot.event
 async def on_reaction_add(reaction, user):
+    '''This function serves to make moves as specified by the player.'''
     if reaction.message.author == bot.user and user != bot.user:
         # Make move based on which emoji was reacted to:
-        global game_active, player_list, msg, reactions
+        global game_active, player_list, msg, reactions, recentPos
         column = reactions[str(reaction)]
         ctx = reaction.message.channel
         if not game_active:
@@ -128,19 +114,21 @@ async def on_reaction_add(reaction, user):
             description = f"{display_board()}\nPlayer {current_player} please choose a valid column."
             await update_embed(msg, title='Connect4', description=description)
             return
-
-        if check_win():
-            await ctx.send(f"Player {current_player} wins!")
-            game_active = False
-            player_list = []
-        elif check_draw():
-            await ctx.send("It's a draw!")
-            game_active = False
-            player_list = []
         else:
             switch_player()
             description = f"{display_board()}\nPlayer {current_player}'s turn."
             await update_embed(msg, title='Connect4', description=description)
+
+        if check_win(recentPos):
+            description = f"{display_board()}\nPlayer {current_player} wins!"
+            await update_embed(msg, title='Connect4', description=description)
+            game_active = False
+            player_list = []
+        elif check_draw():
+            description = f"{display_board()}\nIt's a draw!"
+            await update_embed(msg, title='Connect4', description=description)
+            game_active = False
+            player_list = []
 
 
 # Functions to create, send, or edit embed:
