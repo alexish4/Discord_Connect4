@@ -42,18 +42,109 @@ def display_board():
     return board_str
 
 # Check Endgame Logic:
-def dfs(start):
-    # Helper function/heuristic for check_win() method:
-    #if length >= 4:
-        #return True
-    return False
+class dfs:
+    def __init__(self) -> None:
+        self.visited = set()
+
+    def horizontal(self, point, path):
+        # Helper function/heuristic for check_win() method.
+        global current_player, board
+
+        # Break condition:
+        if point[0] < 0 or point[0] > 5 or point[1] < 0 or point[1] > 6:
+            return False
+
+        if len(path) >= 4:
+            return True
+
+        # Perform horizontal search only:
+        if board[point[0]][point[1]] == current_player and (point[0], point[1]) not in self.visited:
+            pt = (point[0], point[1])
+            self.visited.add(pt)
+            path.append(current_player)
+            res = dfs.horizontal([point[0], point[1]-1], path) or dfs.horizontal([point[0], point[1]+1], path)
+            path.pop()
+            self.visited.remove(pt)
+            return res
+        else:
+            return False
+
+    def vertical(self, point, path):
+        # Helper function/heuristic for check_win() method.
+        global current_player,board
+
+        # Break condition:
+        if point[0] < 0 or point[0] > 5 or point[1] < 0 or point[1] > 6:
+            return False
+
+        if len(path) >= 4:
+            return True
+
+        # Perform vertical search only:
+        if board[point[0]][point[1]] == current_player and (point[0], point[1]) not in self.visited:
+            pt = (point[0], point[1])
+            self.visited.add(pt)
+            path.append(current_player)
+            res = dfs.vertical([point[0]-1, point[1]], path) or dfs.vertical([point[0]+1, point[1]], path)
+            path.pop()
+            self.visited.remove(pt)
+            return res
+        else:
+            return False
+
+    def diagonal1(self, point, path):
+        # Helper function/heuristic for check_win() method. (Bottom left to top right)
+        global current_player, board
+
+        # Break condition:
+        if point[0] < 0 or point[0] > 5 or point[1] < 0 or point[1] > 6:
+            return False
+
+        if len(path) >= 4:
+            return True
+
+        # Perform diagonal search only (Bottom left to top right):
+        if board[point[0]][point[1]] == current_player and (point[0], point[1]) not in self.visited:
+            pt = (point[0], point[1])
+            self.visited.add(pt)
+            path.append(current_player)
+            res = dfs.diagonal1([point[0]-1, point[1]+1], path) or dfs.diagonal1([point[0]+1, point[1]-1], path)
+            path.pop()
+            self.visited.remove(pt)
+            return res
+        else:
+            return False
+
+    def diagonal2(self, point, path):
+        # Helper function/heuristic for check_win() method. (Top left to bottom right)
+        global current_player, board
+
+        # Break condition:
+        if point[0] < 0 or point[0] > 5 or point[1] < 0 or point[1] > 6:
+            return False
+
+        if len(path) >= 4:
+            return True
+
+        # Perform diagonal search only (Top left to bottom right):
+        if board[point[0]][point[1]] == current_player and (point[0], point[1]) not in self.visited:
+            pt = (point[0], point[1])
+            self.visited.add(pt)
+            path.append(current_player)
+            res = dfs.diagonal2([point[0]-1, point[1]-1], path) or dfs.diagonal2([point[0]+1, point[1]+1], path)
+            path.pop()
+            self.visited.remove(pt)
+            return res
+        else:
+            return False
 
 def check_win(origin):
     # Longest segment of any color is >=4:
     # Only need to check from the most recently placed circle.
-    if dfs(origin):
+    if dfs.horizontal(origin, []) or dfs.vertical(origin, []) or dfs.diagonal1(origin, []) or dfs.diagonal2(origin, []):
         return True
-    return False
+    else:
+        return False
 
 def check_draw():
     # All spaces filled but no instance of 4 long segment:
@@ -114,21 +205,21 @@ async def on_reaction_add(reaction, user):
             description = f"{display_board()}\nPlayer {current_player} please choose a valid column."
             await update_embed(msg, title='Connect4', description=description)
             return
+
+        if check_win(recentPos):
+            game_active = False
+            description = f"{display_board()}\nPlayer {current_player} wins!"
+            await update_embed(msg, title='Connect4', description=description)
+            player_list = []
+        elif check_draw():
+            game_active = False
+            description = f"{display_board()}\nIt's a draw!"
+            await update_embed(msg, title='Connect4', description=description)
+            player_list = []
         else:
             switch_player()
             description = f"{display_board()}\nPlayer {current_player}'s turn."
             await update_embed(msg, title='Connect4', description=description)
-
-        if check_win(recentPos):
-            description = f"{display_board()}\nPlayer {current_player} wins!"
-            await update_embed(msg, title='Connect4', description=description)
-            game_active = False
-            player_list = []
-        elif check_draw():
-            description = f"{display_board()}\nIt's a draw!"
-            await update_embed(msg, title='Connect4', description=description)
-            game_active = False
-            player_list = []
 
 
 # Functions to create, send, or edit embed:
@@ -184,6 +275,8 @@ async def on_message(message):
 
     # Ensure that the bot processes incoming messages:
     await bot.process_commands(message)
+
+dfs = dfs()
 
 # Run the bot:
 TOKEN = os.getenv("TOKEN")
