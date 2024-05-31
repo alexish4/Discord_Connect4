@@ -63,7 +63,6 @@ class dfs:
             self.visited.add(pt)
             path.append(current_player)
             res = dfs.horizontal([point[0], point[1]-1], path) or dfs.horizontal([point[0], point[1]+1], path)
-            path.pop()
             self.visited.remove(pt)
             return res
         else:
@@ -86,7 +85,6 @@ class dfs:
             self.visited.add(pt)
             path.append(current_player)
             res = dfs.vertical([point[0]-1, point[1]], path) or dfs.vertical([point[0]+1, point[1]], path)
-            path.pop()
             self.visited.remove(pt)
             return res
         else:
@@ -109,7 +107,6 @@ class dfs:
             self.visited.add(pt)
             path.append(current_player)
             res = dfs.diagonal1([point[0]-1, point[1]+1], path) or dfs.diagonal1([point[0]+1, point[1]-1], path)
-            path.pop()
             self.visited.remove(pt)
             return res
         else:
@@ -132,7 +129,6 @@ class dfs:
             self.visited.add(pt)
             path.append(current_player)
             res = dfs.diagonal2([point[0]-1, point[1]-1], path) or dfs.diagonal2([point[0]+1, point[1]+1], path)
-            path.pop()
             self.visited.remove(pt)
             return res
         else:
