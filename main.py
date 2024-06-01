@@ -228,6 +228,7 @@ async def on_reaction_add(reaction, user):
             switch_player()
             description = f"{display_board()}\nPlayer {current_player}'s turn."
             await update_embed(msg, title='Connect4', description=description)
+    
     else: #remove reaction of outside interference
         if user != bot.user: 
             # Remove the user's reaction
