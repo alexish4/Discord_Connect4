@@ -24,11 +24,12 @@ spaces_left = 42
 reactions = {"1️⃣": 0, "2️⃣": 1, "3️⃣": 2, "4️⃣": 3, "5️⃣": 4, "6️⃣": 5, "7️⃣": 6}
 
 # Need to add a method to allow ONLY two players to join:
-def roster(author):
+def roster(user):
     global player_list
-    if len(player_list) < 2:
-        player_list.append(author)
-    return
+    if len(player_list) == 0 and user != bot.user: #adding first user
+        player_list.append(user)
+    if len(player_list) == 1 and user != bot.user and current_player == '🔴': #adding second user
+        player_list.append(user)
 
 def initialize_board():
     b = [['⚪' for _ in range(7)] for _ in range(6)]
@@ -185,11 +186,7 @@ async def on_reaction_add(reaction, user):
     
     #adding users, only 2 allowed
     global player_list
-
-    if len(player_list) == 0 and user != bot.user: #adding first user
-        player_list.append(user)
-    if len(player_list) == 1 and user != bot.user and current_player == '🔴': #adding second user
-        player_list.append(user)
+    roster(user)
     
     if user.id in [u.id for u in player_list]: #if user is allowed
         # Make move based on which emoji was reacted to:
