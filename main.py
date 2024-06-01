@@ -194,6 +194,9 @@ async def on_reaction_add(reaction, user):
             description = "Invalid column. Choose a column between 0 and 6."
             await update_embed(msg, title='Connect4', description=description)
             return
+        
+        # Remove the user's reaction
+        await reaction.message.remove_reaction(reaction.emoji, user)
 
         # Add logic to make move and update board.
         # Make call to make_move and check if column is full:
