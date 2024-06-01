@@ -182,14 +182,14 @@ async def start_connect4(ctx):
 @bot.event
 async def on_reaction_add(reaction, user):
     '''This function serves to make moves as specified by the player.'''
-    global player_list
+    
     #adding users, only 2 allowed
+    global player_list
+
     if len(player_list) == 0 and user != bot.user: #adding first user
         player_list.append(user)
     if len(player_list) == 1 and user != bot.user and current_player == '🔴': #adding second user
         player_list.append(user)
-
-    print(player_list)
     
     if user.id in [u.id for u in player_list]: #if user is allowed
         # Make move based on which emoji was reacted to:
