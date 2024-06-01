@@ -192,43 +192,42 @@ async def on_reaction_add(reaction, user):
     print(player_list)
     
     if user.id in [u.id for u in player_list]: #if user is allowed
-        if reaction.message.author == bot.user and user != bot.user:
-            # Make move based on which emoji was reacted to:
-            global game_active, msg, reactions, recentPos
-            column = reactions[str(reaction)]
-            ctx = reaction.message.channel
-            if not game_active:
-                await ctx.send("No active game. Start a new game with !start_connect4.")
-                return
-            if column < 0 or column > 6:
-                description = "Invalid column. Choose a column between 0 and 6."
-                await update_embed(msg, title='Connect4', description=description)
-                return
-            
-            # Remove the user's reaction
-            await reaction.message.remove_reaction(reaction.emoji, user)
+        # Make move based on which emoji was reacted to:
+        global game_active, msg, reactions, recentPos
+        column = reactions[str(reaction)]
+        ctx = reaction.message.channel
+        if not game_active:
+            await ctx.send("No active game. Start a new game with !start_connect4.")
+            return
+        if column < 0 or column > 6:
+            description = "Invalid column. Choose a column between 0 and 6."
+            await update_embed(msg, title='Connect4', description=description)
+            return
+        
+        # Remove the user's reaction
+        await reaction.message.remove_reaction(reaction.emoji, user)
 
-            # Add logic to make move and update board.
-            # Make call to make_move and check if column is full:
-            if not make_move(column):
-                description = f"{display_board()}\nPlayer {current_player} please choose a valid column."
-                await update_embed(msg, title='Connect4', description=description)
-                return
+        # Add logic to make move and update board.
+        # Make call to make_move and check if column is full:
+        if not make_move(column):
+            description = f"{display_board()}\nPlayer {current_player} please choose a valid column."
+            await update_embed(msg, title='Connect4', description=description)
+            return
 
-            if check_win(recentPos):
-                game_active = False
-                description = f"{display_board()}\nPlayer {current_player} wins!"
-                await update_embed(msg, title='Connect4', description=description)
-                player_list = []
-            elif check_draw():
-                game_active = False
-                description = f"{display_board()}\nIt's a draw!"
-                await update_embed(msg, title='Connect4', description=description)
-                player_list = []
-            else:
-                switch_player()
-                description = f"{display_board()}\nPlayer {current_player}'s turn."
-                await update_embed(msg, title='Connect4', description=description)
+        if check_win(recentPos):
+            game_active = False
+            description = f"{display_board()}\nPlayer {current_player} wins!"
+            await update_embed(msg, title='Connect4', description=description)
+            player_list = []
+        elif check_draw():
+            game_active = False
+            description = f"{display_board()}\nIt's a draw!"
+            await update_embed(msg, title='Connect4', description=description)
+            player_list = []
+        else:
+            switch_player()
+            description = f"{display_board()}\nPlayer {current_player}'s turn."
+            await update_embed(msg, title='Connect4', description=description)
     else: #remove reaction of outside interference
         if user != bot.user: 
             # Remove the user's reaction
