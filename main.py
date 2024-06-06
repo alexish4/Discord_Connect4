@@ -22,6 +22,7 @@ board = []
 player_list = []
 yellow_user_id = None
 red_user_id = None
+active_player_id = None
 recentPos = []
 spaces_left = 42
 reactions = {"1️⃣": 0, "2️⃣": 1, "3️⃣": 2, "4️⃣": 3, "5️⃣": 4, "6️⃣": 5, "7️⃣": 6}
@@ -162,8 +163,9 @@ def make_move(column):
     return False
 
 def switch_player():
-    global current_player
+    global current_player, active_player_id
     current_player = '🔴' if current_player == '🟡' else '🟡'
+    active_player_id = red_user_id if active_player_id == yellow_user_id else yellow_user_id
 
 
 @bot.command(name='start_connect4')
@@ -184,11 +186,12 @@ async def start_connect4(ctx):
 @bot.event
 async def on_reaction_add(reaction, user):
     '''This function serves to make moves as specified by the player.'''
-    global player_list, game_active, msg, reactions, recentPos, yellow_user_id, red_user_id
+    global player_list, game_active, msg, reactions, recentPos, yellow_user_id, red_user_id, active_player_id
 
     # Check-in process (adding only 2 players):
     if str(reaction.emoji) == '🟡' and yellow_user_id == None and user != bot.user:
         yellow_user_id = user.id
+        active_player_id = yellow_user_id # Yellow makes first move
         player_list.append(user)
         description = f"Yellow Player Has Joined the Game"
         await update_embed_check_in(msg_check_in, title='Connect4 Roster', description=description)
@@ -200,7 +203,7 @@ async def on_reaction_add(reaction, user):
         await update_embed_check_in(msg_check_in, title='Connect4 Roster', description=description)
         return
     
-    if user.id in [u.id for u in player_list]: # If user is allowed
+    if user.id == active_player_id: # If user is allowed
         # Make move based on which emoji was reacted to:
         column = reactions[str(reaction)]
         ctx = reaction.message.channel
