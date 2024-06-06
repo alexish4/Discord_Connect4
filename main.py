@@ -176,6 +176,12 @@ def switch_player():
 @bot.command(name='start_connect4')
 async def start_connect4(ctx):
     global game_active, current_player, board, msg
+
+    #check in process
+    description = f"Choose your chip below to assign yourself:"
+    msg = await send_embed_check_in(ctx=ctx, title='Connect4', description=description)
+
+    #start game
     game_active = True
     current_player = '🟡'
     board = initialize_board()
@@ -185,21 +191,26 @@ async def start_connect4(ctx):
 @bot.event
 async def on_reaction_add(reaction, user):
     '''This function serves to make moves as specified by the player.'''
-    global player_list
+    global player_list, game_active, msg, reactions, recentPos, yellow_user_id, red_user_id
 
     if str(reaction.emoji) == '🟡' and yellow_user_id == None:
         yellow_user_id = user.id
         player_list.append(user)
+
+        description = f"Yellow Player Has Joined the Game"
+        await update_embed_check_in(msg, title='Connect4', description=description)
     if str(reaction.emoji) == '🔴' and red_user_id == None:
         red_user_id = user.id
         player_list.append(user)
+
+        description = f"Red Player Has Joined the Game"
+        await update_embed_check_in(msg, title='Connect4', description=description)
     #adding users, only 2 allowed
     
     #roster(user)
     
     if user.id in [u.id for u in player_list]: #if user is allowed
         # Make move based on which emoji was reacted to:
-        global game_active, msg, reactions, recentPos
         column = reactions[str(reaction)]
         ctx = reaction.message.channel
         if not game_active:
@@ -258,6 +269,14 @@ async def send_embed_check_in(ctx, title, description, url=None, image_url=None)
     await message.add_reaction("🔴")
 
     return message
+
+async def update_embed_check_in(message, title, description, url=None, image_url=None):
+    # Updates the game board to prevent message spamming:
+    new_embed = discord.Embed(title=title, description=description, color=color)
+    await message.edit(embed=new_embed)
+
+    await message.add_reaction("🟡")
+    await message.add_reaction("🔴")
 
 async def send_embed(ctx, title, description, url=None, image_url=None):
     # Sends the initial embedded message (game board):
