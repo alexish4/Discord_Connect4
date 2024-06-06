@@ -16,19 +16,16 @@ color = discord.Color.from_rgb(114, 137, 218)
 # Game State Variables:
 game_active = False
 msg = None
+msg_check_in = None
 current_player = '🟡'
 board = []
 player_list = []
+yellow_user_id = None
+red_user_id = None
+active_player_id = None
 recentPos = []
 spaces_left = 42
 reactions = {"1️⃣": 0, "2️⃣": 1, "3️⃣": 2, "4️⃣": 3, "5️⃣": 4, "6️⃣": 5, "7️⃣": 6}
-
-# Need to add a method to allow ONLY two players to join:
-def roster(author):
-    global player_list
-    if len(player_list) < 2:
-        player_list.append(author)
-    return
 
 def initialize_board():
     b = [['⚪' for _ in range(7)] for _ in range(6)]
@@ -166,13 +163,20 @@ def make_move(column):
     return False
 
 def switch_player():
-    global current_player
+    global current_player, active_player_id
     current_player = '🔴' if current_player == '🟡' else '🟡'
+    active_player_id = red_user_id if active_player_id == yellow_user_id else yellow_user_id
 
 
 @bot.command(name='start_connect4')
 async def start_connect4(ctx):
-    global game_active, current_player, board, msg
+    global game_active, current_player, board, msg, msg_check_in
+
+    # Check in process
+    description = f"Choose your chip below to assign yourself:"
+    msg_check_in = await send_embed_check_in(ctx=ctx, title='Connect4 Roster', description=description)
+
+    # Start the game:
     game_active = True
     current_player = '🟡'
     board = initialize_board()
@@ -182,9 +186,25 @@ async def start_connect4(ctx):
 @bot.event
 async def on_reaction_add(reaction, user):
     '''This function serves to make moves as specified by the player.'''
-    if reaction.message.author == bot.user and user != bot.user:
+    global player_list, game_active, msg, reactions, recentPos, yellow_user_id, red_user_id, active_player_id
+
+    # Check-in process (adding only 2 players):
+    if str(reaction.emoji) == '🟡' and yellow_user_id == None and user != bot.user:
+        yellow_user_id = user.id
+        active_player_id = yellow_user_id # Yellow makes first move
+        player_list.append(user)
+        description = f"Yellow Player Has Joined the Game"
+        await update_embed_check_in(msg_check_in, title='Connect4 Roster', description=description)
+        return
+    if str(reaction.emoji) == '🔴' and red_user_id == None and user != bot.user:
+        red_user_id = user.id
+        player_list.append(user)
+        description = f"Red Player Has Joined the Game"
+        await update_embed_check_in(msg_check_in, title='Connect4 Roster', description=description)
+        return
+    
+    if user.id == active_player_id: # If user is allowed
         # Make move based on which emoji was reacted to:
-        global game_active, player_list, msg, reactions, recentPos
         column = reactions[str(reaction)]
         ctx = reaction.message.channel
         if not game_active:
@@ -194,6 +214,9 @@ async def on_reaction_add(reaction, user):
             description = "Invalid column. Choose a column between 0 and 6."
             await update_embed(msg, title='Connect4', description=description)
             return
+        
+        # Remove the user's reaction
+        await reaction.message.remove_reaction(reaction.emoji, user)
 
         # Add logic to make move and update board.
         # Make call to make_move and check if column is full:
@@ -216,6 +239,11 @@ async def on_reaction_add(reaction, user):
             switch_player()
             description = f"{display_board()}\nPlayer {current_player}'s turn."
             await update_embed(msg, title='Connect4', description=description)
+    
+    else: # Remove reaction of outside interference
+        if user != bot.user: 
+            # Remove the user's reaction
+            await reaction.message.remove_reaction(reaction.emoji, user)
 
 
 # Functions to create, send, or edit embed:
@@ -226,6 +254,21 @@ def create_embed(title, description, url=None, image_url=None):
     if image_url:
         embed.set_image(url=image_url)
     return embed
+
+async def send_embed_check_in(ctx, title, description, url=None, image_url=None):
+    # Sends the initial embedded message (game board):
+    embed = create_embed(title, description, url, image_url)
+    message = await ctx.send(embed=embed)
+    await message.add_reaction("🟡")
+    await message.add_reaction("🔴")
+    return message
+
+async def update_embed_check_in(message, title, description, url=None, image_url=None):
+    # Updates the game board to prevent message spamming:
+    new_embed = discord.Embed(title=title, description=description, color=color)
+    await message.edit(embed=new_embed)
+    await message.add_reaction("🟡")
+    await message.add_reaction("🔴")
 
 async def send_embed(ctx, title, description, url=None, image_url=None):
     # Sends the initial embedded message (game board):
@@ -261,13 +304,6 @@ async def on_message(message):
     # Ignore messages from the bot itself:
     if message.author == bot.user:
         return
-
-    # Get author's ID:
-    author_id = message.author.id
-
-    # Add author to roster if message is "Dibs":
-    if message.content == "Dibs":
-        roster(author_id)
 
     # Ensure that the bot processes incoming messages:
     await bot.process_commands(message)
