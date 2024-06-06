@@ -19,6 +19,8 @@ msg = None
 current_player = '🟡'
 board = []
 player_list = []
+yellow_user_id = None
+red_user_id = None
 recentPos = []
 spaces_left = 42
 reactions = {"1️⃣": 0, "2️⃣": 1, "3️⃣": 2, "4️⃣": 3, "5️⃣": 4, "6️⃣": 5, "7️⃣": 6}
@@ -183,10 +185,17 @@ async def start_connect4(ctx):
 @bot.event
 async def on_reaction_add(reaction, user):
     '''This function serves to make moves as specified by the player.'''
-    
-    #adding users, only 2 allowed
     global player_list
-    roster(user)
+
+    if str(reaction.emoji) == '🟡' and yellow_user_id == None:
+        yellow_user_id = user.id
+        player_list.append(user)
+    if str(reaction.emoji) == '🔴' and red_user_id == None:
+        red_user_id = user.id
+        player_list.append(user)
+    #adding users, only 2 allowed
+    
+    #roster(user)
     
     if user.id in [u.id for u in player_list]: #if user is allowed
         # Make move based on which emoji was reacted to:
@@ -240,6 +249,15 @@ def create_embed(title, description, url=None, image_url=None):
     if image_url:
         embed.set_image(url=image_url)
     return embed
+
+async def send_embed_check_in(ctx, title, description, url=None, image_url=None):
+    # Sends the initial embedded message (game board):
+    embed = create_embed(title, description, url, image_url)
+    message = await ctx.send(embed=embed)
+    await message.add_reaction("🟡")
+    await message.add_reaction("🔴")
+
+    return message
 
 async def send_embed(ctx, title, description, url=None, image_url=None):
     # Sends the initial embedded message (game board):
